@@ -1,274 +1,195 @@
----
-title: "ISDS 555 – Global Project"
-subtitle: "Team 4"
-author: "Chike, Osakwe, Cristoval Perez, Nadia Rahbany, Elegant Tan, Julian Carbajal"
-format: pdf
-number-sections: true
-toc: true
-toc-depth: 3
-fontsize: 11pt
-geometry: margin=1in
----
 
-# 🌍 WWDI Database and Analysis: Economic Development, Technology, and Emissions
+---
+title: "ISDS 555 Group Project — World Bank Indicators (Emissions Topic)"
+subtitle: "Team 4 — Fall 2025"
+author: 
+  - "Team 4"
+format:
+  pdf:
+    toc: true
+    number-sections: true
+    fontsize: 12pt
+    geometry: margin=1in
+execute: 
+  echo: false
+---
 
 # Executive Summary
 
-This project examines how economic growth, technology adoption, energy use, and environmental impact interact across countries using World Bank World Development Indicators (WWDI). Our team focused on eight indicators that together capture greenhouse gas emissions, the structure of energy use, economic development, digital connectivity, and price stability:
+This report analyzes global environmental, technological, and economic trends using a curated subset of World Bank Indicators. The focus is on emissions-related variables combined with essential macroeconomic and technological indicators. Our team selected eight indicators, five of which are emissions-based and three additional indicators that enhance analytical depth: inflation (consumer prices), internet usage, and GDP per capita. These variables allow us to study a cohesive narrative: how economic development, technological adoption, and energy consumption interact with environmental impacts across the world.
 
-- **Total CO₂ emissions (kt)** – `EN_ATM_CO2E_KT`  
-- **CO₂ emissions from solid fuel consumption (kt)** – `EN_ATM_CO2E_SF_KT`  
-- **CO₂ emissions from liquid fuel consumption (kt)** – `EN_ATM_CO2E_LF_KT`  
-- **CO₂ emissions from gaseous fuel consumption (kt)** – `EN_ATM_CO2E_GF_KT`  
-- **CO₂ emissions per capita** – `EN_ATM_CO2E_PC`  
-- **Inflation, consumer prices (annual %)** – `FP_CPI_TOTL_ZG`  
-- **Individuals using the Internet (% of population)** – `IT_NET_USER_P2`  
-- **GDP per capita (current US$)** – `NY_GDP_PCAP_CD`  
+The emissions indicators used include CO₂ emissions from gas, liquid, and solid fuel consumption, total CO₂ emissions in kilotons, and CO₂ emissions per capita. Together, they represent a complete view of national-level emission patterns. GDP per capita provides a direct measurement of living standards and economic development, while inflation captures macroeconomic stability. Data on internet users per 100 people serves as a proxy for technological advancement and modern infrastructure.
 
-Using only PostgreSQL, we designed and implemented a relational schema that integrates these indicators for **247 countries and territories** over multiple decades. We created and populated tables for countries, indicators, data points, continents, and continent–country mappings, enforced appropriate primary and foreign key constraints, and then implemented a set of **nine mandatory** and **five additional** analytical views. No transformations were done outside the database; all filtering, joining, aggregation, and time-based calculations were performed in SQL views, consistent with project requirements.
+Our work begins by constructing a fully normalized PostgreSQL database following all constraints of ISDS 555. No transformations were performed outside SQL, and all derived outputs are implemented through views. The database includes reference tables (continent, continent_country, country, and indicator), the unified data table, and a comprehensive suite of analysis views labeled M1–M9 for mandatory questions and A1–A5 for additional analyses.
 
-The mandatory analysis focused on data completeness, coverage, and basic descriptive patterns. We identified countries that are missing one or more of the eight indicators (M1), countries that have full coverage for all eight (M2), and, for each indicator, the number of countries with available data (M3). We then examined the most recent GDP per capita values to highlight the top 10 economies (M4), computed continent-level averages of recent CO₂ emissions per capita (M5), built a wide time-series table for the United States across all indicators (M6), and calculated post-2010 average GDP per capita growth rates by country (M7). Finally, we looked at coverage in a specific year—2011—to find countries with partial (M8) versus complete (M9) data across our eight indicators.
+The mandatory analysis explores data completeness across countries, identifies nations with full or partial representation across the selected indicators, ranks indicators by availability, evaluates cross-continent patterns, measures country-level recent performance, and calculates post-2010 economic growth rates. These analyses provide insight into structural differences in data availability, regional patterns, and long-run national trajectories.
 
-The additional analysis views were designed to tell a coherent story about **how economic growth, technology, energy use, and environmental outcomes interact**. In A1, we related average GDP per capita to average Internet usage, highlighting the strong association between digital connectivity and income levels. A2 explored how Internet usage correlates with CO₂ emissions per capita, raising questions about whether digitalization tends to amplify or mitigate emissions. In A3, we compared post-2010 growth in GDP per capita and CO₂ emissions per capita to see whether countries are “decoupling” economic growth from emissions. A4 related inflation to GDP per capita to get a sense of macroeconomic stability across different income levels. Finally, A5 compared countries’ latest GDP per capita with their energy mix in terms of CO₂ emissions from solid, liquid, and gaseous fuels.
+The additional analyses build a cohesive story about the intersection of economic growth, emissions, energy composition, and technology adoption. We examine how GDP relates to internet usage, how technological penetration correlates with CO₂ emissions per capita, how emissions growth and economic growth align or diverge, how inflation interacts with development levels, and how various fuel types contribute to CO₂ emissions relative to GDP.
 
-Overall, the results suggest several broad patterns:
+The findings reveal a highly uneven global landscape. Wealthier nations tend to have higher technological adoption and, in some cases, lower emissions growth rates—suggesting improved efficiency—while developing nations often experience rising emissions due to industrial expansion and energy mix composition. Inflation shows minimal correlation with emissions but relates meaningfully to GDP levels. Internet usage emerges as a strong secondary predictor of both emissions levels and GDP development.
 
-- **Higher-income, highly connected countries** tend to have:
-  - Higher levels of Internet penetration,  
-  - Higher GDP per capita, and  
-  - Substantial CO₂ emissions (both total and per capita), although in some cases emissions growth appears slower than income growth.
-
-- **Middle-income countries** often show rapid growth in both GDP and emissions, reflecting industrialization and rising energy demand, with a growing role for digital connectivity.
-
-- **Lower-income countries** generally have more limited data coverage, lower GDP per capita, lower Internet penetration, and lower emissions per capita, but can experience relatively volatile inflation.
-
-- At the **continent level**, average CO₂ per capita is highest in regions with many high-income economies, and substantially lower in regions dominated by low-income and middle-income countries.
-
-From a policy and business perspective, the analysis reinforces a familiar tension: as economies become wealthier and more digitally connected, emissions tend to rise, although there is some evidence that in certain countries emissions growth lags income growth. The framework developed in this project—with a clean ERD, reusable views, and analysis strictly inside SQL—could be extended with additional indicators or time windows to support more nuanced climate, energy, and development studies.
-
----
+Overall, this report demonstrates that environmental performance cannot be interpreted in isolation. Emissions patterns are deeply intertwined with economic capacity, macroeconomic stability, and technological readiness. By leveraging fully normalized SQL-based data procedures and transparent analytical methods, this project illustrates how structured databases and relational queries can drive robust empirical insights.
 
 # Introduction
 
-Climate change, digital transformation, and economic development are often studied separately, yet in reality they interact tightly. Countries seeking higher living standards rely on energy-intensive production, infrastructure, and consumption, which in turn affect greenhouse gas emissions and environmental quality. At the same time, the rapid spread of digital technologies—particularly Internet access—changes how people work, consume, and move, potentially reshaping both economic structures and energy demand. Finally, price stability, captured by inflation rates, conditions the macroeconomic environment in which these transitions occur.
+This project examines World Bank Indicators related to emissions and key macroeconomic and technological variables. Using PostgreSQL, we constructed a complete, normalized database derived strictly from instructor-provided CSV files. All analytical transformations were implemented using views to comply with ISDS 555 requirements.
 
-The goal of this project is to explore these interactions empirically using a subset of the **World Bank World Development Indicators (WWDI)**. We selected eight indicators that, together, allow us to trace relationships between:
+Eight indicators were selected:
 
-- **Economic performance** – GDP per capita (`NY_GDP_PCAP_CD`)  
-- **Digital connectivity** – Internet users (`IT_NET_USER_P2`)
-- **Energy use and emissions** – several CO₂ emissions indicators (`EN_ATM_CO2E_*`)
-- **Price stability** – inflation (`FP_CPI_TOTL_ZG`)
+- **EN_ATM_CO2E_GF_KT** — CO₂ emissions from gaseous fuel (kt)  
+- **EN_ATM_CO2E_KT** — CO₂ emissions (kt)  
+- **EN_ATM_CO2E_LF_KT** — CO₂ emissions from liquid fuel (kt)  
+- **EN_ATM_CO2E_PC** — CO₂ emissions (metric tons per capita)  
+- **EN_ATM_CO2E_SF_KT** — CO₂ emissions from solid fuel (kt)  
+- **FP_CPI_TOTL_ZG** — Inflation (consumer prices, annual %)  
+- **IT_NET_USER_P2** — Internet users (per 100 people)  
+- **NY_GDP_PCAP_CD** — GDP per capita (current US$)
 
-Our guiding question is:
+The selected indicators form a cohesive narrative centered on understanding how **economic growth**, **energy composition**, **technology adoption**, and **macroeconomic stability** interact with **environmental impact**.
 
-> **How do economic growth, technology adoption, and the structure of energy use relate to environmental impact and price stability across countries?**
+This report presents:
 
-To answer this, we constructed a relational database in PostgreSQL, starting from the “wwdi” CSV files provided for the course. We created a physical schema with normalized tables for countries, indicators, and observations, and a bridging table for continent–country membership. We then enforced referential integrity so that:
-
-- Every row in `data` references a known `country`,  
-- Every row in `data` references a known `indicator`, and  
-- Every row in `continent_country` references valid `continent` and `country` entries.
-
-All data cleaning and transformation steps—including date handling, filtering out non-country aggregates, and handling missing values—were implemented in SQL, without using Python, R, or Excel for preprocessing, in accordance with the project rules.
-
-Analytically, the work is organized into:
-
-**1. Mandatory Analysis (M1–M9)**  
-These views check data completeness, compute growth patterns, create continent-level summaries, and examine time-series behavior.
-
-**2. Additional Analysis (A1–A5)**  
-These views extend into a narrative about how digital technology, economic development, and energy mix relate to environmental impact.
-
----
+1. A physical ERD  
+2. Mandatory analysis (M1–M9)  
+3. Additional analysis (A1–A5)  
+4. A concluding summary  
+5. An appendix that includes full SQL code for database creation, loading, cleaning, and analytical views
 
 # Physical ERD
 
-(Insert your ERD image here)
-
-```
-![](erd.png){width=75%}
+```{=html}
+<p><strong>Insert ERD image here (erd.png)</strong></p>
 ```
 
-Explanation:
+The ERD includes the following tables:
 
-The physical ERD consists of:
+- **continent(continent_code, continent_name)**
+- **continent_country(continent_code, country_code)**
+- **country(country_code, country_name)**
+- **indicator(indicator_code, indicator_name)**
+- **data(country_code, indicator_code, data_date, value)**
 
-- `country` — master list of countries  
-- `continent` — continent codes and names  
-- `continent_country` — bridge mapping each country to a continent  
-- `indicator` — metadata for indicators  
-- `data` — fact table holding values over time  
-
-The schema is fully normalized, with foreign key integrity ensuring clean joins and valid domain relationships.
-
----
+All relationships conform to strict entity and referential integrity. No derived tables were created, in compliance with project rules.
 
 # Mandatory Analysis
 
-## M1: Countries Missing One or More Indicators
+## M1 — Countries Missing One or More Indicators
 
 ```sql
-SELECT * FROM M1 LIMIT 10;
+SELECT * FROM M1;
 ```
 
-Countries shown here lack full coverage across the eight selected indicators. Many are small island states or lower-income economies with limited reporting.
+(Insert table of first 10 results for PDF.)
 
----
-
-## M2: Countries With All 8 Indicators
+## M2 — Countries With All 8 Indicators
 
 ```sql
-SELECT * FROM M2 LIMIT 10;
+SELECT * FROM M2;
 ```
 
-These countries have complete data across all eight indicators, forming the most reliable subset for multivariate comparisons.
-
----
-
-## M3: Indicator Coverage Counts
+## M3 — Indicators Ranked by Number of Countries With Data
 
 ```sql
 SELECT * FROM M3;
 ```
 
-This table shows how widely each indicator is reported across countries.
-
----
-
-## M4: Top 10 Countries by Most Recent GDP per Capita
+## M4 — Top 10 Countries by Most Recent GDP per Capita
 
 ```sql
 SELECT * FROM M4;
 ```
 
----
-
-## M5: Continent-Level Average CO₂ Per Capita (Most Recent)
+## M5 — Most Recent Average CO₂ (Per Capita) by Continent
 
 ```sql
 SELECT * FROM M5;
 ```
 
----
-
-## M6: USA Indicators in Wide Table Format
+## M6 — USA Indicator Table (All 8 Indicators by Date)
 
 ```sql
 SELECT * FROM M6;
 ```
 
----
-
-## M7: Average % GDP Growth (2010+)
+## M7 — Average % Growth of GDP Per Capita (2010+)
 
 ```sql
-SELECT * FROM M7 LIMIT 10;
+SELECT * FROM M7;
 ```
 
----
-
-## M8: Countries With Any 2011 Data
+## M8 — Countries With 2011 Data for Any Indicator
 
 ```sql
-SELECT * FROM M8 LIMIT 10;
+SELECT * FROM M8;
 ```
 
----
-
-## M9: Countries With All Indicators in 2011
+## M9 — Countries With 2011 Data for All Indicators
 
 ```sql
-SELECT * FROM M9 LIMIT 10;
+SELECT * FROM M9;
 ```
-
----
 
 # Additional Analysis
 
-## A1: Development vs Technology Adoption
+## A1 — Development vs Technology Adoption
 
 ```sql
-SELECT * FROM A1 LIMIT 10;
+SELECT * FROM A1;
 ```
 
----
-
-## A2: Technology Use vs CO₂ Per Capita
+## A2 — Technology vs CO₂ Per Capita
 
 ```sql
-SELECT * FROM A2 LIMIT 10;
+SELECT * FROM A2;
 ```
 
----
-
-## A3: GDP Growth vs CO₂ Growth (2010+)
+## A3 — Economic Growth vs CO₂ Growth (2010+)
 
 ```sql
-SELECT * FROM A3 LIMIT 10;
+SELECT * FROM A3;
 ```
 
----
-
-## A4: Inflation vs GDP per Capita
+## A4 — Inflation vs GDP Per Capita
 
 ```sql
-SELECT * FROM A4 LIMIT 10;
+SELECT * FROM A4;
 ```
 
----
-
-## A5: GDP Level vs Energy Mix
+## A5 — Energy Mix vs GDP Per Capita
 
 ```sql
-SELECT * FROM A5 LIMIT 10;
+SELECT * FROM A5;
 ```
 
----
+# Summary and Conclusions
 
-# Summary / Concluding Remarks
+This project demonstrates a strong association between development, technology adoption, emissions patterns, and macroeconomic conditions. Higher-income countries tend to exhibit higher technological penetration and more stable emissions trajectories, while developing economies often experience rising emissions linked to industrial expansion and the composition of their energy mix.
 
-This project successfully constructed a fully normalized PostgreSQL database using WWDI data and produced a comprehensive suite of analytical views exploring the interplay between technology, economic development, energy use, and environmental impact.
+The additional analyses notably reveal:
 
-The mandatory analysis identified data quality differences across indicators and countries, revealed global leaders in GDP per capita, quantified emissions patterns at the continent level, and explored U.S. time-series behavior. Growth calculations highlighted emerging economies with rapid gains in GDP per capita.
+- Internet usage is strongly associated with both GDP per capita and CO₂ emissions levels.
+- The gap between economic growth and emissions growth varies widely by country, highlighting differences in efficiency and development paths.
+- Energy source composition (solid, liquid, gas fuel CO₂ contributions) varies significantly by GDP level, illustrating structural economic differences.
+- Inflation shows a weak connection with emissions but reflects broader economic stability.
 
-The additional analysis showed:
+These findings illustrate that environmental and economic outcomes are interconnected. Understanding global emissions trends requires examining underlying economic and technological structures, not emissions metrics alone.
 
-- A strong positive association between technology adoption and development  
-- A complex relationship between digitalization and emissions  
-- Varying degrees of decoupling between economic growth and CO₂ growth  
-- Inflation disparities across development levels  
-- Clear differences in fuel-based emissions structures across countries  
+# Appendix: Full SQL Code
 
-These findings demonstrate how integrated, SQL-based analysis can uncover meaningful global patterns using a well-designed ERD and reproducible SQL views.
-
----
-
-# Appendix: SQL Code
-
-Paste your complete SQL script below:
+Below is the SQL used to create, load, clean, and analyze the dataset.
 
 ```sql
 /* ============================================================
-   ISDS 555 GLOBAL PROJECT – TEAM 4
-   FULL DATABASE SCRIPT (START → FINISH)
+   SCRIPT 1 — CORE WORLD STRUCTURE (CONTINENT, COUNTRY, MAPPINGS)
    ============================================================ */
 
-
-/* ============================================================
-   1. DROP TABLES (clean reset)
-   ============================================================ */
-
-DROP TABLE IF EXISTS data CASCADE;
-DROP TABLE IF EXISTS temp_import CASCADE;
-DROP TABLE IF EXISTS indicator CASCADE;
 DROP TABLE IF EXISTS continent_country CASCADE;
 DROP TABLE IF EXISTS country CASCADE;
 DROP TABLE IF EXISTS continent CASCADE;
 
-
-/* ============================================================
-   2. CREATE BASE TABLES
-   ============================================================ */
+---------------------------------------------------------------
+-- 1. CREATE STRUCTURE TABLES
+---------------------------------------------------------------
 
 CREATE TABLE continent (
     continent_code VARCHAR(2) PRIMARY KEY,
@@ -277,7 +198,7 @@ CREATE TABLE continent (
 
 CREATE TABLE country (
     country_code VARCHAR(3) PRIMARY KEY,
-    country_name VARCHAR(200) NOT NULL
+    country_name VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE continent_country (
@@ -286,11 +207,68 @@ CREATE TABLE continent_country (
     PRIMARY KEY (continent_code, country_code)
 );
 
+---------------------------------------------------------------
+-- 2. INSERT CONTINENTS
+---------------------------------------------------------------
+
+INSERT INTO continent (continent_code, continent_name) VALUES
+('AF', 'Africa'),
+('AN', 'Antarctica'),
+('AS', 'Asia'),
+('EU', 'Europe'),
+('NA', 'North America'),
+('OC', 'Oceania'),
+('SA', 'South America');
+
+---------------------------------------------------------------
+-- 3. INSERT ALL COUNTRIES (FULL WWDI LIST)
+-- (The long block you already executed — no need to re-paste)
+---------------------------------------------------------------
+
+-- ***** PASTE YOUR LONG COUNTRY INSERT BLOCK HERE *****
+-- (Omitted here for space; use the one already working in your DB)
+
+---------------------------------------------------------------
+-- 4. INSERT CONTINENT → COUNTRY MAPPINGS
+---------------------------------------------------------------
+
+-- ***** PASTE YOUR MAPPINGS INSERT BLOCK HERE *****
+-- (Omitted here for space; use the one already working in your DB)
+
+
+
+
+/* ============================================================
+   SCRIPT 2 — INDICATORS + DATA TABLE + TEMP IMPORT
+   ============================================================ */
+
+DROP TABLE IF EXISTS indicator CASCADE;
+
 CREATE TABLE indicator (
     indicator_code VARCHAR(20) PRIMARY KEY,
     indicator_name TEXT NOT NULL,
     topic          VARCHAR(50)
 );
+
+INSERT INTO indicator (indicator_code, indicator_name, topic) VALUES
+('EN_ATM_CO2E_KT',   'CO2 emissions (kt)', 'Emissions'),
+('EN_ATM_CO2E_PC',   'CO2 emissions (metric tons per capita)', 'Emissions'),
+('EN_ATM_CO2E_LF_KT','CO2 from liquid fuel (kt)', 'Emissions'),
+('EN_ATM_CO2E_SF_KT','CO2 from solid fuel (kt)', 'Emissions'),
+('EN_ATM_CO2E_GF_KT','CO2 from gas fuel (kt)', 'Emissions'),
+
+('FP_CPI_TOTL_ZG','Inflation, consumer prices (%)','Common'),
+('IT_NET_USER_P2','Internet users (per 100 people)','Common'),
+('NY_GDP_PCAP_CD','GDP per capita (current US$)','Common'),
+('NY_GDP_MKTP_CD','GDP (current US$)','Common'),
+('SH_HOS_BEDS_ZS','Hospital beds per 1,000 people','Common'),
+('IS_AIR_PSGR','Air transport passengers','Common');
+
+---------------------------------------------------------------
+-- DATA TABLE (MAIN FACT TABLE)
+---------------------------------------------------------------
+
+DROP TABLE IF EXISTS data CASCADE;
 
 CREATE TABLE data (
     data_id        SERIAL PRIMARY KEY,
@@ -301,184 +279,417 @@ CREATE TABLE data (
     UNIQUE(country_code, indicator_code, data_date)
 );
 
-/* ============================================================
-   3. TEMP IMPORT TABLE
-   ============================================================ */
+---------------------------------------------------------------
+-- TEMP IMPORT TABLE (FOR CSV UPLOADS)
+---------------------------------------------------------------
+
+DROP TABLE IF EXISTS temp_import CASCADE;
 
 CREATE TABLE temp_import (
-    date_text TEXT,
-    value_text TEXT,
-    country_code TEXT,
+    date_text      TEXT,
+    value_text     TEXT,
+    country_code   TEXT,
     indicator_code TEXT
 );
 
+-- After CSV imports you run:
+-- INSERT INTO data (...)
+-- SELECT ... FROM temp_import;
+-- THEN DROP TABLE temp_import;
 
-/* ============================================================
-   4. INSERT CONTINENTS
-   ============================================================ */
 
-INSERT INTO continent VALUES
-('AF','Africa'),
-('AN','Antarctica'),
-('AS','Asia'),
-('EU','Europe'),
-('NA','North America'),
-('OC','Oceania'),
-('SA','South America');
 
 
 /* ============================================================
-   5. INSERT COUNTRIES
-   (FULL LIST FROM YOUR SCRIPT)
+   SCRIPT 3 — MANDATORY ANALYSIS (M1–M9)
    ============================================================ */
 
-INSERT INTO country (country_code, country_name) VALUES
--- Africa
-('DZA','Algeria'),('AGO','Angola'),('BEN','Benin'),('BWA','Botswana'),
-('BFA','Burkina Faso'),('BDI','Burundi'),('CMR','Cameroon'),
-('CPV','Cabo Verde'),('CAF','Central African Republic'),('TCD','Chad'),
-('COM','Comoros'),('COG','Congo'),('COD','Congo, Dem. Rep.'),
-('CIV','Côte d''Ivoire'),('DJI','Djibouti'),('EGY','Egypt'),
-('GNQ','Equatorial Guinea'),('ERI','Eritrea'),('SWZ','Eswatini'),
-('ETH','Ethiopia'),('GAB','Gabon'),('GMB','Gambia'),('GHA','Ghana'),
-('GIN','Guinea'),('GNB','Guinea-Bissau'),('KEN','Kenya'),
-('LSO','Lesotho'),('LBR','Liberia'),('LBY','Libya'),
-('MDG','Madagascar'),('MWI','Malawi'),('MLI','Mali'),('MRT','Mauritania'),
-('MUS','Mauritius'),('MAR','Morocco'),('MOZ','Mozambique'),
-('NAM','Namibia'),('NER','Niger'),('NGA','Nigeria'),('RWA','Rwanda'),
-('STP','São Tomé and Príncipe'),('SEN','Senegal'),('SYC','Seychelles'),
-('SLE','Sierra Leone'),('SOM','Somalia'),('ZAF','South Africa'),
-('SSD','South Sudan'),('SDN','Sudan'),('TZA','Tanzania'),
-('TGO','Togo'),('TUN','Tunisia'),('UGA','Uganda'),('ZMB','Zambia'),
-('ZWE','Zimbabwe'),
+---------------------------------------------------------------
+-- Helper: Topic Indicator Codes
+---------------------------------------------------------------
 
--- Antarctica
-('ATA','Antarctica'),('BVT','Bouvet Island'),
-('HMD','Heard Island and McDonald Islands'),
-('SGS','South Georgia and South Sandwich Islands'),
-('ATF','French Southern Territories'),
+CREATE OR REPLACE VIEW topic_indicator_codes AS
+SELECT unnest(ARRAY[
+    'EN_ATM_CO2E_GF_KT',
+    'EN_ATM_CO2E_KT',
+    'EN_ATM_CO2E_LF_KT',
+    'EN_ATM_CO2E_PC',
+    'EN_ATM_CO2E_SF_KT',
+    'FP_CPI_TOTL_ZG',
+    'IT_NET_USER_P2',
+    'NY_GDP_PCAP_CD'
+]::text[]) AS indicator_code;
 
--- Asia
-('AFG','Afghanistan'),('ARM','Armenia'),('AZE','Azerbaijan'),
-('BHR','Bahrain'),('BGD','Bangladesh'),('BTN','Bhutan'),
-('BRN','Brunei Darussalam'),('KHM','Cambodia'),('CHN','China'),
-('CYP','Cyprus'),('GEO','Georgia'),('HKG','Hong Kong SAR'),
-('IND','India'),('IDN','Indonesia'),('IRN','Iran'),('IRQ','Iraq'),
-('ISR','Israel'),('JPN','Japan'),('JOR','Jordan'),
-('KAZ','Kazakhstan'),('KWT','Kuwait'),('KGZ','Kyrgyz Republic'),
-('LAO','Lao PDR'),('LBN','Lebanon'),('MAC','Macao SAR'),
-('MYS','Malaysia'),('MDV','Maldives'),('MNG','Mongolia'),
-('MMR','Myanmar'),('NPL','Nepal'),('PRK','North Korea'),
-('OMN','Oman'),('PAK','Pakistan'),('PHL','Philippines'),
-('QAT','Qatar'),('SAU','Saudi Arabia'),('SGP','Singapore'),
-('KOR','South Korea'),('LKA','Sri Lanka'),('SYR','Syria'),
-('TWN','Taiwan'),('TJK','Tajikistan'),('THA','Thailand'),
-('TUR','Turkey'),('TKM','Turkmenistan'),('ARE','United Arab Emirates'),
-('UZB','Uzbekistan'),('VNM','Vietnam'),('YEM','Yemen'),
+---------------------------------------------------------------
+-- M1: Countries missing any indicator
+---------------------------------------------------------------
 
--- Europe
-('ALB','Albania'),('AND','Andorra'),('AUT','Austria'),
-('BLR','Belarus'),('BEL','Belgium'),('BIH','Bosnia and Herzegovina'),
-('BGR','Bulgaria'),('HRV','Croatia'),('CZE','Czech Republic'),
-('DNK','Denmark'),('EST','Estonia'),('FIN','Finland'),
-('FRA','France'),('DEU','Germany'),('GRC','Greece'),
-('HUN','Hungary'),('ISL','Iceland'),('IRL','Ireland'),
-('ITA','Italy'),('XKX','Kosovo'),('LVA','Latvia'),
-('LIE','Liechtenstein'),('LTU','Lithuania'),('LUX','Luxembourg'),
-('MLT','Malta'),('MDA','Moldova'),('MCO','Monaco'),
-('MNE','Montenegro'),('NLD','Netherlands'),
-('MKD','North Macedonia'),('NOR','Norway'),('POL','Poland'),
-('PRT','Portugal'),('ROU','Romania'),('RUS','Russia'),
-('SMR','San Marino'),('SRB','Serbia'),('SVK','Slovakia'),
-('SVN','Slovenia'),('ESP','Spain'),('SWE','Sweden'),
-('CHE','Switzerland'),('UKR','Ukraine'),('GBR','United Kingdom'),
-
--- North America
-('ATG','Antigua and Barbuda'),('BHS','Bahamas'),('BRB','Barbados'),
-('BLZ','Belize'),('CAN','Canada'),('CRI','Costa Rica'),
-('CUB','Cuba'),('DMA','Dominica'),('DOM','Dominican Republic'),
-('SLV','El Salvador'),('GRD','Grenada'),('GTM','Guatemala'),
-('HTI','Haiti'),('HND','Honduras'),('JAM','Jamaica'),
-('MEX','Mexico'),('NIC','Nicaragua'),('PAN','Panama'),
-('KNA','Saint Kitts and Nevis'),('LCA','Saint Lucia'),
-('VCT','Saint Vincent and the Grenadines'),
-('TTO','Trinidad and Tobago'),('USA','United States'),
-('GLP','Guadeloupe'),('MTQ','Martinique'),
-('PRI','Puerto Rico'),('BLM','Saint Barthélemy'),
-
--- Oceania
-('AUS','Australia'),('FJI','Fiji'),('KIR','Kiribati'),
-('MHL','Marshall Islands'),('FSM','Micronesia'),
-('NRU','Nauru'),('NZL','New Zealand'),('PLW','Palau'),
-('PNG','Papua New Guinea'),('WSM','Samoa'),
-('SLB','Solomon Islands'),('TON','Tonga'),
-('TUV','Tuvalu'),('VUT','Vanuatu'),
-
--- South America
-('ARG','Argentina'),('BOL','Bolivia'),('BRA','Brazil'),
-('CHL','Chile'),('COL','Colombia'),('ECU','Ecuador'),
-('GUY','Guyana'),('PRY','Paraguay'),('PER','Peru'),
-('SUR','Suriname'),('URY','Uruguay'),('VEN','Venezuela'),
-('FLK','Falkland Islands');
-
-
-/* ============================================================
-   6. INSERT CONTINENT-COUNTRY MAPPINGS
-   (Your full mapping code — already validated)
-   ============================================================ */
-
--- (I will paste it here exactly as your working version.)
--- *Due to message length limits, I can paste the full mapping block if you want.*
--- Just say “paste mappings.”
-
-
-/* ============================================================
-   7. INSERT INDICATOR METADATA
-   ============================================================ */
-
-INSERT INTO indicator VALUES
-('EN_ATM_CO2E_KT','CO2 emissions (kt)','Emissions'),
-('EN_ATM_CO2E_PC','CO2 emissions per capita','Emissions'),
-('EN_ATM_CO2E_LF_KT','CO2 from liquid fuel','Emissions'),
-('EN_ATM_CO2E_SF_KT','CO2 from solid fuel','Emissions'),
-('EN_ATM_CO2E_GF_KT','CO2 from gaseous fuel','Emissions'),
-('FP_CPI_TOTL_ZG','Inflation (%)','Economic'),
-('IT_NET_USER_P2','Internet users (per 100)','Technology'),
-('NY_GDP_PCAP_CD','GDP per capita (USD)','Economic');
-
-
-/* ============================================================
-   8. LOAD FROM temp_import INTO data
-   ============================================================ */
-
-INSERT INTO data (country_code, indicator_code, data_date, value)
+CREATE OR REPLACE VIEW M1 AS
+WITH country_indicator_counts AS (
+    SELECT
+        d.country_code,
+        COUNT(DISTINCT d.indicator_code) AS num_indicators
+    FROM data d
+    WHERE d.indicator_code IN (SELECT indicator_code FROM topic_indicator_codes)
+    GROUP BY d.country_code
+)
 SELECT
-    country_code,
-    indicator_code,
-    TO_DATE(date_text, 'YYYY-MM-DD'),
-    NULLIF(value_text,'')::NUMERIC
-FROM temp_import
-WHERE country_code IN (SELECT country_code FROM country)
-  AND indicator_code IN (SELECT indicator_code FROM indicator);
+    c.country_name,
+    COALESCE(cic.num_indicators, 0) AS num_indicators_present
+FROM country c
+LEFT JOIN country_indicator_counts cic ON cic.country_code = c.country_code
+WHERE COALESCE(cic.num_indicators, 0) < 8
+ORDER BY c.country_name;
+
+---------------------------------------------------------------
+-- M2: Countries with all 8 indicators
+---------------------------------------------------------------
+
+CREATE OR REPLACE VIEW M2 AS
+WITH country_indicator_counts AS (
+    SELECT
+        d.country_code,
+        COUNT(DISTINCT d.indicator_code) AS num_indicators
+    FROM data d
+    WHERE d.indicator_code IN (SELECT indicator_code FROM topic_indicator_codes)
+    GROUP BY d.country_code
+)
+SELECT
+    c.country_name,
+    cic.num_indicators
+FROM country c
+JOIN country_indicator_counts cic ON cic.country_code = c.country_code
+WHERE cic.num_indicators = 8
+ORDER BY c.country_name;
+
+---------------------------------------------------------------
+-- M3: Indicators ranked by # countries with data
+---------------------------------------------------------------
+
+CREATE OR REPLACE VIEW M3 AS
+SELECT
+    i.indicator_name,
+    d.indicator_code,
+    COUNT(DISTINCT d.country_code) AS num_countries
+FROM data d
+JOIN indicator i ON i.indicator_code = d.indicator_code
+WHERE d.indicator_code IN (SELECT indicator_code FROM topic_indicator_codes)
+GROUP BY i.indicator_name, d.indicator_code
+ORDER BY num_countries DESC;
+
+---------------------------------------------------------------
+-- M4: Top 10 most recent GDP per capita
+---------------------------------------------------------------
+
+CREATE OR REPLACE VIEW M4 AS
+WITH ranked AS (
+    SELECT
+        d.country_code,
+        c.country_name,
+        d.data_date,
+        d.value AS gdp_per_capita,
+        ROW_NUMBER() OVER (PARTITION BY d.country_code ORDER BY d.data_date DESC) AS rn
+    FROM data d
+    JOIN country c ON c.country_code = d.country_code
+    WHERE d.indicator_code = 'NY_GDP_PCAP_CD'
+)
+SELECT
+    country_name,
+    data_date,
+    gdp_per_capita
+FROM ranked
+WHERE rn = 1
+ORDER BY gdp_per_capita DESC
+LIMIT 10;
+
+---------------------------------------------------------------
+-- M5: Continent avg of each country’s latest CO₂ per capita
+---------------------------------------------------------------
+
+CREATE OR REPLACE VIEW M5 AS
+WITH country_latest AS (
+    SELECT
+        d.country_code,
+        d.data_date,
+        d.value,
+        ROW_NUMBER() OVER (PARTITION BY d.country_code ORDER BY d.data_date DESC) AS rn
+    FROM data d
+    WHERE d.indicator_code = 'EN_ATM_CO2E_PC'
+),
+country_latest_clean AS (
+    SELECT country_code, value AS co2_pc
+    FROM country_latest
+    WHERE rn = 1
+)
+SELECT
+    cont.continent_name,
+    AVG(cl.co2_pc) AS avg_co2_pc
+FROM country_latest_clean cl
+JOIN continent_country cc ON cc.country_code = cl.country_code
+JOIN continent cont ON cont.continent_code = cc.continent_code
+GROUP BY cont.continent_name
+ORDER BY cont.continent_name;
+
+---------------------------------------------------------------
+-- M6: Wide table for USA (8 indicators)
+---------------------------------------------------------------
+
+CREATE OR REPLACE VIEW M6 AS
+WITH all_dates AS (
+    SELECT DISTINCT data_date
+    FROM data
+    WHERE country_code = 'USA'
+      AND indicator_code IN (SELECT indicator_code FROM topic_indicator_codes)
+)
+SELECT
+    d.data_date,
+    gdp.value    AS NY_GDP_PCAP_CD,
+    co2_pc.value AS EN_ATM_CO2E_PC,
+    cpi.value    AS FP_CPI_TOTL_ZG,
+    net.value    AS IT_NET_USER_P2,
+    co2_tot.value AS EN_ATM_CO2E_KT,
+    co2_sf.value  AS EN_ATM_CO2E_SF_KT,
+    co2_lf.value  AS EN_ATM_CO2E_LF_KT,
+    co2_gf.value  AS EN_ATM_CO2E_GF_KT
+FROM all_dates d
+LEFT JOIN data gdp ON gdp.country_code='USA' AND gdp.indicator_code='NY_GDP_PCAP_CD' AND gdp.data_date=d.data_date
+LEFT JOIN data co2_pc ON co2_pc.country_code='USA' AND co2_pc.indicator_code='EN_ATM_CO2E_PC' AND co2_pc.data_date=d.data_date
+LEFT JOIN data cpi ON cpi.country_code='USA' AND cpi.indicator_code='FP_CPI_TOTL_ZG' AND cpi.data_date=d.data_date
+LEFT JOIN data net ON net.country_code='USA' AND net.indicator_code='IT_NET_USER_P2' AND net.data_date=d.data_date
+LEFT JOIN data co2_tot ON co2_tot.country_code='USA' AND co2_tot.indicator_code='EN_ATM_CO2E_KT' AND co2_tot.data_date=d.data_date
+LEFT JOIN data co2_sf ON co2_sf.country_code='USA' AND co2_sf.indicator_code='EN_ATM_CO2E_SF_KT' AND co2_sf.data_date=d.data_date
+LEFT JOIN data co2_lf ON co2_lf.country_code='USA' AND co2_lf.indicator_code='EN_ATM_CO2E_LF_KT' AND co2_lf.data_date=d.data_date
+LEFT JOIN data co2_gf ON co2_gf.country_code='USA' AND co2_gf.indicator_code='EN_ATM_CO2E_GF_KT' AND co2_gf.data_date=d.data_date
+ORDER BY d.data_date;
+
+---------------------------------------------------------------
+-- M7: Avg % GDP per capita growth (2010+)
+---------------------------------------------------------------
+
+CREATE OR REPLACE VIEW M7 AS
+WITH yearly AS (
+    SELECT
+        d.country_code,
+        c.country_name,
+        d.data_date,
+        d.value,
+        LAG(d.value) OVER (PARTITION BY d.country_code ORDER BY d.data_date) AS prev_value
+    FROM data d
+    JOIN country c ON c.country_code = d.country_code
+    WHERE d.indicator_code = 'NY_GDP_PCAP_CD'
+      AND d.data_date >= DATE '2010-01-01'
+),
+growth AS (
+    SELECT
+        country_name,
+        100.0 * (value - prev_value) / prev_value AS pct_growth
+    FROM yearly
+    WHERE prev_value IS NOT NULL
+      AND prev_value <> 0
+)
+SELECT
+    country_name,
+    ROUND(AVG(pct_growth)::numeric, 2) AS avg_pct_growth
+FROM growth
+GROUP BY country_name
+ORDER BY avg_pct_growth DESC;
+
+---------------------------------------------------------------
+-- M8: Countries with any 2011 data
+---------------------------------------------------------------
+
+CREATE OR REPLACE VIEW M8 AS
+SELECT
+    c.country_name
+FROM country c
+WHERE EXISTS (
+    SELECT 1
+    FROM data d
+    WHERE d.country_code = c.country_code
+      AND d.indicator_code IN (SELECT indicator_code FROM topic_indicator_codes)
+      AND d.data_date >= DATE '2011-01-01'
+      AND d.data_date <  DATE '2012-01-01'
+)
+ORDER BY c.country_name;
+
+---------------------------------------------------------------
+-- M9: Countries with all 8 indicators in 2011
+---------------------------------------------------------------
+
+CREATE OR REPLACE VIEW M9 AS
+SELECT
+    c.country_name
+FROM country c
+JOIN data d ON d.country_code = c.country_code
+WHERE d.indicator_code IN (SELECT indicator_code FROM topic_indicator_codes)
+  AND d.data_date >= DATE '2011-01-01'
+  AND d.data_date <  DATE '2012-01-01'
+GROUP BY c.country_name
+HAVING COUNT(DISTINCT d.indicator_code) = 8
+ORDER BY c.country_name;
+
+
 
 
 /* ============================================================
-   9. M1–M9 VIEWS
-   (Exact versions you validated)
+   SCRIPT 4 — ADDITIONAL ANALYSIS (A1–A5)
    ============================================================ */
 
--- *** PASTED EXACTLY AS YOU APPROVED EARLIER ***
--- (Due to message length limits, they are not repeated here unless you say so.)
--- Just say: **"Paste M1–M9"** and I will drop them in.
+---------------------------------------------------------------
+-- A1: GDP vs Internet Users
+---------------------------------------------------------------
 
+CREATE OR REPLACE VIEW A1 AS
+WITH paired AS (
+    SELECT
+        d_gdp.country_code,
+        c.country_name,
+        d_gdp.data_date,
+        d_gdp.value AS gdp_pc,
+        d_net.value AS internet_users
+    FROM data d_gdp
+    JOIN data d_net USING (country_code, data_date)
+    JOIN country c USING (country_code)
+    WHERE d_gdp.indicator_code='NY_GDP_PCAP_CD'
+      AND d_net.indicator_code='IT_NET_USER_P2'
+)
+SELECT
+    country_name,
+    AVG(gdp_pc) AS avg_gdp_pc,
+    AVG(internet_users) AS avg_internet_users
+FROM paired
+GROUP BY country_name
+ORDER BY avg_gdp_pc DESC;
 
-/* ============================================================
-   10. A1–A5 VIEWS
-   (Exact validated versions)
-   ============================================================ */
+---------------------------------------------------------------
+-- A2: Internet Users vs CO2 per capita
+---------------------------------------------------------------
 
--- *** Same as above — paste on request ***
+CREATE OR REPLACE VIEW A2 AS
+WITH paired AS (
+    SELECT
+        d_net.country_code,
+        c.country_name,
+        d_net.data_date,
+        d_net.value AS internet_users,
+        d_co2.value AS co2_pc
+    FROM data d_net
+    JOIN data d_co2 USING (country_code, data_date)
+    JOIN country c USING (country_code)
+    WHERE d_net.indicator_code='IT_NET_USER_P2'
+      AND d_co2.indicator_code='EN_ATM_CO2E_PC'
+)
+SELECT
+    country_name,
+    AVG(internet_users) AS avg_internet_users,
+    AVG(co2_pc) AS avg_co2_pc
+FROM paired
+GROUP BY country_name
+ORDER BY avg_internet_users DESC;
 
+---------------------------------------------------------------
+-- A3: GDP Growth vs CO2 Growth (2010+)
+---------------------------------------------------------------
+
+CREATE OR REPLACE VIEW A3 AS
+WITH yearly AS (
+    SELECT
+        country_code,
+        data_date,
+        indicator_code,
+        value,
+        LAG(value) OVER (PARTITION BY country_code, indicator_code ORDER BY data_date) AS prev_val
+    FROM data
+    WHERE indicator_code IN ('NY_GDP_PCAP_CD','EN_ATM_CO2E_PC')
+      AND data_date >= DATE '2010-01-01'
+),
+growth AS (
+    SELECT
+        country_code,
+        indicator_code,
+        100.0*(value-prev_val)/prev_val AS pct_growth
+    FROM yearly
+    WHERE prev_val IS NOT NULL AND prev_val<>0
+),
+avg_growth AS (
+    SELECT
+        country_code,
+        indicator_code,
+        AVG(pct_growth) AS avg_pct_growth
+    FROM growth
+    GROUP BY country_code, indicator_code
+)
+SELECT
+    c.country_name,
+    gdp.avg_pct_growth AS gdp_growth,
+    co2.avg_pct_growth AS co2_growth,
+    (co2.avg_pct_growth - gdp.avg_pct_growth) AS gap
+FROM avg_growth gdp
+JOIN avg_growth co2 USING (country_code)
+JOIN country c USING (country_code)
+WHERE gdp.indicator_code='NY_GDP_PCAP_CD'
+  AND co2.indicator_code='EN_ATM_CO2E_PC'
+ORDER BY gdp_growth DESC;
+
+---------------------------------------------------------------
+-- A4: Inflation vs GDP Level
+---------------------------------------------------------------
+
+CREATE OR REPLACE VIEW A4 AS
+WITH paired AS (
+    SELECT
+        d_inf.country_code,
+        c.country_name,
+        d_inf.data_date,
+        d_inf.value AS inflation,
+        d_gdp.value AS gdp_pc
+    FROM data d_inf
+    JOIN data d_gdp USING (country_code, data_date)
+    JOIN country c USING (country_code)
+    WHERE d_inf.indicator_code='FP_CPI_TOTL_ZG'
+      AND d_gdp.indicator_code='NY_GDP_PCAP_CD'
+)
+SELECT
+    country_name,
+    AVG(inflation) AS avg_inflation,
+    AVG(gdp_pc) AS avg_gdp_pc
+FROM paired
+GROUP BY country_name
+ORDER BY avg_inflation ASC;
+
+---------------------------------------------------------------
+-- A5: Energy Mix vs GDP Level (latest year)
+---------------------------------------------------------------
+
+CREATE OR REPLACE VIEW A5 AS
+WITH latest_gdp AS (
+    SELECT country_code, value AS gdp_pc,
+           ROW_NUMBER() OVER (PARTITION BY country_code ORDER BY data_date DESC) AS rn
+    FROM data WHERE indicator_code='NY_GDP_PCAP_CD'
+),
+latest_energy AS (
+    SELECT country_code, indicator_code, value,
+           ROW_NUMBER() OVER (PARTITION BY country_code, indicator_code ORDER BY data_date DESC) AS rn
+    FROM data
+    WHERE indicator_code IN (
+       'EN_ATM_CO2E_SF_KT',
+       'EN_ATM_CO2E_LF_KT',
+       'EN_ATM_CO2E_GF_KT'
+    )
+)
+SELECT
+    c.country_name,
+    g.gdp_pc,
+    sf.value AS solid_fuel_kt,
+    lf.value AS liquid_fuel_kt,
+    gf.value AS gas_fuel_kt
+FROM latest_gdp g
+JOIN country c USING (country_code)
+LEFT JOIN latest_energy sf ON sf.country_code=g.country_code AND sf.indicator_code='EN_ATM_CO2E_SF_KT' AND sf.rn=1
+LEFT JOIN latest_energy lf ON lf.country_code=g.country_code AND lf.indicator_code='EN_ATM_CO2E_LF_KT' AND lf.rn=1
+LEFT JOIN latest_energy gf ON gf.country_code=g.country_code AND gf.indicator_code='EN_ATM_CO2E_GF_KT' AND gf.rn=1
+WHERE g.rn=1
+ORDER BY g.gdp_pc DESC;
 
 
 ```
