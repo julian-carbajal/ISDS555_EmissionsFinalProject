@@ -1,4 +1,3 @@
-
 ---
 title: "ISDS 555 Group Project — World Bank Indicators (Emissions Topic)"
 subtitle: "Team 4 — Fall 2025"
