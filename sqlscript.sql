@@ -506,6 +506,18 @@ SELECT indicator_code, COUNT(*) FROM data GROUP BY indicator_code ORDER BY indic
 SELECT COUNT(DISTINCT country_code) as num_countries FROM data;
 SELECT MIN(data_date) as earliest, MAX(data_date) as latest FROM data;
 
+/*
+
+DROP TABLE IF EXISTS raw_co2_total CASCADE;
+DROP TABLE IF EXISTS raw_co2_per_capita CASCADE;
+DROP TABLE IF EXISTS raw_co2_liquid_fuel CASCADE;
+DROP TABLE IF EXISTS raw_co2_solid_fuel CASCADE;
+DROP TABLE IF EXISTS raw_co2_gas_fuel CASCADE;
+DROP TABLE IF EXISTS raw_gdp_per_capita CASCADE;
+DROP TABLE IF EXISTS raw_internet_users CASCADE;
+DROP TABLE IF EXISTS raw_inflation CASCADE;
+
+*/
 
 
 /* =====================================================================
@@ -727,18 +739,22 @@ ORDER BY avg_pct_growth DESC;
 ---------------------------------------------------------------
 
 CREATE OR REPLACE VIEW M8 AS
-SELECT
-    c.country_name
-FROM country c
-WHERE EXISTS (
-    SELECT 1
+SELECT DISTINCT country_name
+FROM (
+    SELECT
+        c.country_name,
+        d.indicator_code,
+        d.data_date,
+        ROW_NUMBER() OVER (
+            PARTITION BY d.country_code, d.indicator_code
+            ORDER BY ABS(EXTRACT(YEAR FROM d.data_date) - 2011)
+        ) AS rn
     FROM data d
-    WHERE d.country_code = c.country_code
-      AND d.indicator_code IN (SELECT indicator_code FROM topic_indicator_codes)
-      AND d.data_date >= DATE '2011-01-01'
-      AND d.data_date <  DATE '2012-01-01'
-)
-ORDER BY c.country_name;
+    JOIN country c ON c.country_code = d.country_code
+    WHERE d.indicator_code IN (SELECT indicator_code FROM topic_indicator_codes)
+) x
+WHERE rn = 1   -- nearest to 2011
+ORDER BY country_name;
 
 ---------------------------------------------------------------
 -- M9: Countries with 2011 data for ALL 5 emissions indicators
